@@ -1,0 +1,202 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+
+local plr = Players.LocalPlayer
+local Character = plr.Character or plr.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+
+local IceHubAqua = Instance.new("ScreenGui")
+IceHubAqua.Name = "IceHubAqua"
+IceHubAqua.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+IceHubAqua.ResetOnSpawn = false
+IceHubAqua.Parent = CoreGui
+
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
+Main.Position = UDim2.new(0.5, -115, 0.5, -55)
+Main.Size = UDim2.new(0, 230, 0, 110)
+Main.BorderSizePixel = 0
+Main.ClipsDescendants = true
+Main.Parent = IceHubAqua
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = Main
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Parent = Main
+
+local MainGradient = Instance.new("UIGradient")
+MainGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+})
+MainGradient.Rotation = 45
+MainGradient.Parent = MainStroke
+
+local TitleBar = Instance.new("Frame")
+TitleBar.BackgroundTransparency = 1
+TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.Parent = Main
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Text = "VILLA DESYNC"
+TitleLabel.Font = Enum.Font.GothamBlack
+TitleLabel.TextSize = 15
+TitleLabel.TextColor3 = Color3.fromRGB(126, 192, 238)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Size = UDim2.new(1, -40, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = TitleBar
+
+local MinimizeContainer = Instance.new("Frame")
+MinimizeContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MinimizeContainer.Size = UDim2.new(0, 22, 0, 22)
+MinimizeContainer.Position = UDim2.new(1, -28, 0.5, 0)
+MinimizeContainer.AnchorPoint = Vector2.new(0, 0.5)
+MinimizeContainer.Parent = TitleBar
+
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 5)
+MinimizeCorner.Parent = MinimizeContainer
+
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Text = "-"
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 16
+MinimizeButton.TextColor3 = Color3.fromRGB(126, 192, 238)
+MinimizeButton.BackgroundTransparency = 1
+MinimizeButton.Size = UDim2.new(1, 0, 1, 0)
+MinimizeButton.Parent = MinimizeContainer
+
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Position = UDim2.new(0, 0, 0, 32)
+ContentFrame.Size = UDim2.new(1, 0, 1, -32)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = Main
+
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ContentLayout.Padding = UDim.new(0, 6)
+ContentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+ContentLayout.Parent = ContentFrame
+
+local function CreateButton(text)
+    local btn = Instance.new("TextButton")
+    btn.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+    btn.Size = UDim2.new(0.9, 0, 0, 28)
+    btn.Text = ""
+    btn.AutoButtonColor = false
+    btn.Parent = ContentFrame
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+    local btnStroke = Instance.new("UIStroke")
+    btnStroke.Color = Color3.fromRGB(126, 192, 238)
+    btnStroke.Thickness = 1
+    btnStroke.Parent = btn
+    local btnLabel = Instance.new("TextLabel")
+    btnLabel.Text = text
+    btnLabel.Font = Enum.Font.GothamBold
+    btnLabel.TextSize = 11
+    btnLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    btnLabel.BackgroundTransparency = 1
+    btnLabel.Size = UDim2.new(1, -30, 1, 0)
+    btnLabel.Position = UDim2.new(0, 8, 0, 0)
+    btnLabel.TextXAlignment = Enum.TextXAlignment.Left
+    btnLabel.Parent = btn
+    local indicator = Instance.new("Frame")
+    indicator.BackgroundColor3 = Color3.fromRGB(126, 192, 238)
+    indicator.Size = UDim2.new(0, 8, 0, 8)
+    indicator.Position = UDim2.new(1, -15, 0.5, 0)
+    indicator.AnchorPoint = Vector2.new(0.5, 0.5)
+    indicator.Parent = btn
+    local indicatorCorner = Instance.new("UICorner")
+    indicatorCorner.CornerRadius = UDim.new(1, 0)
+    indicatorCorner.Parent = indicator
+    return btn, btnLabel, indicator
+end
+
+local desyncEnabled = false
+local desyncBtn, desyncLabel, desyncIndicator = CreateButton("VILLA DESYNC")
+desyncBtn.MouseButton1Click:Connect(function()
+    desyncEnabled = not desyncEnabled
+    local rak = raknet or Raknet or plsraknet or RakNet
+    if not rak or not (rak.desync or rak.Desync) then return end
+    pcall(function()
+        if rak.desync then rak.desync(desyncEnabled)
+        elseif rak.Desync then rak.Desync(desyncEnabled) end
+    end)
+    if desyncEnabled then
+        desyncLabel.Text = "VILLA DESYNC: ON"
+        desyncLabel.TextColor3 = Color3.fromRGB(126, 192, 238)
+        desyncIndicator.BackgroundColor3 = Color3.fromRGB(126, 192, 238)
+    else
+        desyncLabel.Text = "VILLA DESYNC"
+        desyncLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+        desyncIndicator.BackgroundColor3 = Color3.fromRGB(126, 192, 238)
+    end
+end)
+
+local frozenAnims = false
+local freezeBtn, freezeLabel, freezeIndicator = CreateButton("Freeze Animations")
+freezeBtn.MouseButton1Click:Connect(function()
+    frozenAnims = not frozenAnims
+    if frozenAnims then
+        freezeLabel.Text = "Animations: Frozen"
+        freezeLabel.TextColor3 = Color3.fromRGB(126, 192, 238)
+        freezeIndicator.BackgroundColor3 = Color3.fromRGB(126, 192, 238)
+        local tracks = Humanoid:GetPlayingAnimationTracks()
+        for _, track in ipairs(tracks) do track:Stop() end
+    else
+        freezeLabel.Text = "Freeze Animations"
+        freezeLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+        freezeIndicator.BackgroundColor3 = Color3.fromRGB(126, 192, 238)
+    end
+end)
+
+do
+    local dragging = false
+    local dragInput
+    local dragStart
+    local startPos
+
+    TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Main.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+
+    TitleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+local minimized = false
+MinimizeButton.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    local targetSize = minimized and UDim2.new(0, 230, 0, 32) or UDim2.new(0, 230, 0, 110)
+    local tween = TweenService:Create(Main, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = targetSize})
+    tween:Play()
+    MinimizeButton.Text = minimized and "+" or "-"
+end)
